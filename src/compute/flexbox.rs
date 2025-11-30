@@ -1552,26 +1552,31 @@ fn calculate_cross_size(flex_lines: &mut [FlexLine], node_size: Size<Option<f32>
 ///   increase the cross size of each flex line by equal amounts such that the sum of their cross sizes exactly equals the flex container’s inner cross size.
 #[inline]
 fn handle_align_content_stretch(flex_lines: &mut [FlexLine], node_size: Size<Option<f32>>, constants: &AlgoConstants) {
-    if constants.align_content == AlignContent::Stretch {
-        let cross_axis_padding_border = constants.content_box_inset.cross_axis_sum(constants.dir);
-        let cross_min_size = constants.min_size.cross(constants.dir);
-        let cross_max_size = constants.max_size.cross(constants.dir);
-        let container_min_inner_cross = node_size
-            .cross(constants.dir)
-            .or(cross_min_size)
-            .maybe_clamp(cross_min_size, cross_max_size)
-            .maybe_sub(cross_axis_padding_border)
-            .maybe_max(0.0)
-            .unwrap_or(0.0);
+    let cross_axis_padding_border = constants.content_box_inset.cross_axis_sum(constants.dir);
+    let cross_min_size = constants.min_size.cross(constants.dir);
+    let cross_max_size = constants.max_size.cross(constants.dir);
+    let container_min_inner_cross = node_size
+        .cross(constants.dir)
+        .or(cross_min_size)
+        .maybe_clamp(cross_min_size, cross_max_size)
+        .maybe_sub(cross_axis_padding_border)
+        .maybe_max(0.0)
+        .unwrap_or(0.0);
 
-        let total_cross_axis_gap = sum_axis_gaps(constants.gap.cross(constants.dir), flex_lines.len());
-        let lines_total_cross: f32 = flex_lines.iter().map(|line| line.cross_size).sum::<f32>() + total_cross_axis_gap;
+    let total_cross_axis_gap = sum_axis_gaps(constants.gap.cross(constants.dir), flex_lines.len());
+    let lines_total_cross: f32 = flex_lines.iter().map(|line| line.cross_size).sum::<f32>() + total_cross_axis_gap;
 
-        if lines_total_cross < container_min_inner_cross {
-            let remaining = container_min_inner_cross - lines_total_cross;
-            let addition = remaining / flex_lines.len() as f32;
-            flex_lines.iter_mut().for_each(|line| line.cross_size += addition);
-        }
+    let stretch_lines_len =
+        flex_lines.iter().filter(|line| line.items.iter().all(|item| item.align_self == AlignSelf::Stretch)).count();
+
+    if lines_total_cross < container_min_inner_cross {
+        let remaining = container_min_inner_cross - lines_total_cross;
+        let addition = remaining / stretch_lines_len as f32;
+        flex_lines.iter_mut().for_each(|line| {
+            if line.items.iter().all(|item| item.align_self == AlignSelf::Stretch) {
+                line.cross_size += addition
+            }
+        });
     }
 }
 
