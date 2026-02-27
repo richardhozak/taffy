@@ -120,9 +120,13 @@ impl Cache {
                 .filter(|entry| {
                     let cached_size = entry.content.size;
                     (known_dimensions.width == entry.known_dimensions.width
-                        || known_dimensions.width == Some(cached_size.width))
+                        || (known_dimensions.width == Some(cached_size.width)
+                            && (entry.known_dimensions.width.is_some()
+                                || entry.available_space.width.is_roughly_equal(available_space.width))))
                         && (known_dimensions.height == entry.known_dimensions.height
-                            || known_dimensions.height == Some(cached_size.height))
+                            || (known_dimensions.height == Some(cached_size.height)
+                                && (entry.known_dimensions.height.is_some()
+                                    || entry.available_space.height.is_roughly_equal(available_space.height))))
                         && (known_dimensions.width.is_some()
                             || entry.available_space.width.is_roughly_equal(available_space.width))
                         && (known_dimensions.height.is_some()
@@ -134,9 +138,13 @@ impl Cache {
                     let cached_size = entry.content;
 
                     if (known_dimensions.width == entry.known_dimensions.width
-                        || known_dimensions.width == Some(cached_size.width))
+                        || (known_dimensions.width == Some(cached_size.width)
+                            && (entry.known_dimensions.width.is_some()
+                                || entry.available_space.width.is_roughly_equal(available_space.width))))
                         && (known_dimensions.height == entry.known_dimensions.height
-                            || known_dimensions.height == Some(cached_size.height))
+                            || (known_dimensions.height == Some(cached_size.height)
+                                && (entry.known_dimensions.height.is_some()
+                                    || entry.available_space.height.is_roughly_equal(available_space.height))))
                         && (known_dimensions.width.is_some()
                             || entry.available_space.width.is_roughly_equal(available_space.width))
                         && (known_dimensions.height.is_some()
