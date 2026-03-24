@@ -1674,8 +1674,13 @@ fn distribute_remaining_free_space(flex_lines: &mut [FlexLine], constants: &Algo
 
         if free_space > 0.0 && num_auto_margins > 0 {
             let margin = free_space / num_auto_margins as f32;
+            let gap = constants.gap.main(constants.dir);
 
-            for child in line.items.iter_mut() {
+            for (i, child) in line.items.iter_mut().enumerate() {
+                // Gap is always applied between adjacent items, even when auto margins are present.
+                if i > 0 {
+                    child.offset_main = gap;
+                }
                 if child.margin_is_auto.main_start(constants.dir) {
                     if constants.is_row {
                         child.margin.left = margin;
